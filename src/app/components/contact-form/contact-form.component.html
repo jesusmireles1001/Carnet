@@ -1,0 +1,31 @@
+<div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); height: fit-content;">
+  <h3 style="margin-top: 0; color: #34495e; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px;">
+    {{ contactService.enEdition() ? '✏️ Modifier Contact' : '➕ Nouveau Contact' }}
+  </h3>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <label style="font-size: 0.9em; color: #7f8c8d;">Catégorie (Dossier)</label>
+
+    <!-- OJO: Usamos contactService.contactActuel().campo -->
+    <select [(ngModel)]="contactService.contactActuel().categorie" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+      <option value="">-- Aucune (Général) --</option>
+      <option *ngFor="let cat of contactService.categories()" [value]="cat">{{ cat }}</option>
+    </select>
+
+    <input placeholder="Nom" [(ngModel)]="contactService.contactActuel().nom" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+    <input placeholder="Prénom" [(ngModel)]="contactService.contactActuel().prenom" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+    <input placeholder="Téléphone" [(ngModel)]="contactService.contactActuel().numeroDeTelephone" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+    <input placeholder="Email" [(ngModel)]="contactService.contactActuel().adresseMail" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+    <input placeholder="Adresse" [(ngModel)]="contactService.contactActuel().adresse" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+    <input placeholder="Ville" [(ngModel)]="contactService.contactActuel().ville" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+
+    <div style="margin-top: 10px; display: flex; gap: 10px;">
+      <button (click)="guardar()" style="flex: 1; background: #27ae60; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+        {{ contactService.enEdition() ? 'Sauvegarder' : 'Ajouter' }}
+      </button>
+      <button *ngIf="contactService.enEdition()" (click)="cancelar()" style="background: #000000; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer;">
+        Annuler
+      </button>
+    </div>
+  </div>
+</div>

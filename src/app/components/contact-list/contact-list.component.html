@@ -1,0 +1,131 @@
+<div class="card border-0 shadow-sm rounded-4 bg-white p-4">
+
+  <div class="row mb-4 align-items-center">
+
+    <div class="col-md-5 position-relative">
+      <div class="dropdown">
+        <button class="btn btn-outline-primary d-flex align-items-center gap-2 px-3 py-2 fw-medium w-100 justify-content-between"
+                (click)="toggleMenu()"
+                type="button"
+                style="border-radius: 10px;">
+          <span class="d-flex align-items-center gap-2">
+            <i class="fa-regular fa-folder-open"></i>
+            {{ filtroCategoria() === '' ? 'Tous les contacts' :
+            filtroCategoria() === 'SIN_CATEGORIA' ? 'Général (Sin categoría)' :
+              filtroCategoria() }}
+          </span>
+          <i class="fa-solid fa-chevron-down ms-2" style="font-size: 0.7em;"></i>
+        </button>
+
+        @if (menuAbierto()) {
+          <ul class="dropdown-menu show w-100 shadow border-0 mt-1 p-2"
+              style="display: block; position: absolute; z-index: 1000; border-radius: 10px;">
+
+            <li><button class="dropdown-item rounded-2" (click)="filtrarPor('')">
+              <i class="fa-solid fa-layer-group me-2 text-primary"></i> Tous les contacts
+            </button></li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <li><button class="dropdown-item rounded-2" (click)="filtrarPor('SIN_CATEGORIA')">
+              <span class="badge-gris me-2">Général</span> Sans catégorie
+            </button></li>
+
+            @for (cat of contactService.categories(); track cat) {
+              <li><button class="dropdown-item rounded-2" (click)="filtrarPor(cat)">
+                <span class="badge-azul me-2">{{ cat }}</span>
+              </button></li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+
+    <div class="col-md-7">
+      <div class="input-group">
+        <span class="input-group-text bg-white border-end-0 ps-3 text-muted" style="border-radius: 10px 0 0 10px;">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </span>
+
+        <input type="text"
+               class="form-control border-start-0 py-2"
+               placeholder="Rechercher..."
+               style="border-radius: 0 10px 10px 0;"
+               (input)="buscar($event)">
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+
+      <thead class="table-dark">
+      <tr>
+        <th class="py-3 ps-4 cursor-pointer" style="border-top-left-radius: 10px; cursor: pointer;"
+            (click)="cambiarOrden('nom')">
+          Nom
+          @if(ordenColumna() === 'nom') { <i class="fa-solid" [class.fa-arrow-up]="ordenDireccion() === 'asc'" [class.fa-arrow-down]="ordenDireccion() === 'desc'"></i> }
+        </th>
+
+        <th class="py-3 cursor-pointer" style="cursor: pointer;" (click)="cambiarOrden('prenom')">
+          Prénom
+          @if(ordenColumna() === 'prenom') { <i class="fa-solid" [class.fa-arrow-up]="ordenDireccion() === 'asc'" [class.fa-arrow-down]="ordenDireccion() === 'desc'"></i> }
+        </th>
+
+        <th class="py-3 cursor-pointer" style="cursor: pointer;" (click)="cambiarOrden('ville')">
+          Ville
+          @if(ordenColumna() === 'ville') { <i class="fa-solid" [class.fa-arrow-up]="ordenDireccion() === 'asc'" [class.fa-arrow-down]="ordenDireccion() === 'desc'"></i> }
+        </th>
+
+        <th class="py-3">Info Contact</th>
+        <th class="py-3 text-end pe-4" style="border-top-right-radius: 10px;">Actions</th>
+      </tr>
+      </thead>
+
+      <tbody class="bg-white">
+        @for (contact of contactosFiltrados(); track contact.id) {
+          <tr>
+            <td class="fw-bold ps-4 text-dark">{{ contact.nom }}</td>
+            <td class="text-secondary">{{ contact.prenom }}</td>
+            <td class="text-secondary">{{ contact.ville }}</td>
+
+            <td>
+              <div class="d-flex flex-column gap-2">
+                <div class="text-muted small fw-bold">
+                  <i class="fa-solid fa-phone text-danger me-2"></i>
+                  {{ contact.numeroDeTelephone }}
+                </div>
+                <div [class]="contact.categorie ? 'badge-azul' : 'badge-gris'" style="width: fit-content;">
+                  <i class="fa-solid fa-folder"></i>
+                  <span>{{ contact.categorie || 'Général' }}</span>
+                </div>
+              </div>
+            </td>
+
+            <td class="text-end pe-4">
+              <button class="btn btn-link p-0 me-3 text-warning opacity-75 hover-opacity-100"
+                      (click)="contactService.prepararEdicion(contact)"
+                      title="Modifier">
+                <i class="fa-solid fa-pencil fa-lg"></i>
+              </button>
+              <button class="btn btn-link p-0 text-secondary opacity-50 hover-opacity-100"
+                      (click)="contactService.eliminar(contact.id)"
+                      title="Supprimer">
+                <i class="fa-solid fa-trash-can fa-lg"></i>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="text-center py-5 text-muted">
+              <div class="d-flex flex-column align-items-center">
+                <i class="fa-regular fa-folder-open fa-3x mb-3 opacity-25"></i>
+                <p class="mb-0 fw-bold">Aucun contact trouvé.</p>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

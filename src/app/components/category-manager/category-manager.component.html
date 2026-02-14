@@ -1,0 +1,12 @@
+<div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+  <span style="font-weight: bold; color: #555;">Gérer les Dossiers:</span>
+  <input type="text" placeholder="Nouvelle catégorie..." [(ngModel)]="nouvelleCategorie" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+  <button (click)="agregarCategoria()" style="background: #63ff00; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">+ Créer</button>
+
+  <div style="margin-left: auto; display: flex; gap: 5px; flex-wrap: wrap;">
+    <span *ngFor="let cat of contactService.categories()" style="background: #eee; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; display: flex; align-items: center;">
+      {{ cat }}
+      <span (click)="eliminarCategoria(cat)" style="margin-left: 5px; color: red; cursor: pointer; font-weight: bold;">&times;</span>
+    </span>
+  </div>
+</div>

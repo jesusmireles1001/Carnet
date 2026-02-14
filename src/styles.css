@@ -1,1 +1,28 @@
-/* You can add global styles to this file, and also import other style files */
+/* --- PEGA ESTO AL FINAL DE styles.css --- */
+
+/* Estilo para categorías normales (Azul) */
+.badge-azul {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Estilo para la categoría por defecto (Gris) */
+.badge-gris {
+  background-color: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-style: italic;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}/* You can add global styles to this file, and also import other style files */

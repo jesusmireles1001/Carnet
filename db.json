@@ -1,0 +1,62 @@
+{
+  "contacts": [
+    {
+      "id": "1771066419485",
+      "nom": "Peralta",
+      "prenom": "Jafet",
+      "adresseMail": "mail@.com",
+      "numeroDeTelephone": "123",
+      "adresse": "rue1",
+      "ville": "ville1",
+      "categorie": "IUT"
+    },
+    {
+      "id": "1771066477495",
+      "nom": "Esquivel",
+      "prenom": "Marco",
+      "adresseMail": "mail2@.com",
+      "numeroDeTelephone": "123",
+      "adresse": "rue2",
+      "ville": "ville1",
+      "categorie": "Mexique"
+    },
+    {
+      "id": "1771067209769",
+      "nom": "Reina",
+      "prenom": "Dan",
+      "adresseMail": "mail3@.com",
+      "numeroDeTelephone": "456",
+      "adresse": "rue5",
+      "ville": "2",
+      "categorie": "Travail"
+    },
+    {
+      "id": "1771067404053",
+      "nom": "Chagrot",
+      "prenom": "Maxime",
+      "adresseMail": "Marcodanger@.com",
+      "numeroDeTelephone": "123456",
+      "adresse": "rue123",
+      "ville": "ville7",
+      "categorie": "France"
+    }
+  ],
+  "categories": [
+    {
+      "id": "2",
+      "nom": "Travail"
+    },
+    {
+      "id": "33ae",
+      "nom": "France"
+    },
+    {
+      "id": "a2b6",
+      "nom": "Mexique"
+    },
+    {
+      "id": "9b08",
+      "nom": "IUT"
+    }
+  ]
+}
