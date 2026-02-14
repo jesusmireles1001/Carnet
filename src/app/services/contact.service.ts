@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
-import { catchError, delay } from 'rxjs/operators';
+import { catchError, retry } from 'rxjs/operators';
 import { Contact } from '../models/contact';
 
 @Injectable({
@@ -10,16 +10,21 @@ import { Contact } from '../models/contact';
 export class ContactService {
   http = inject(HttpClient);
 
-  // --- CONFIGURACIÓN DE RED ---
+  // --- CONFIGURACIÓN AUTOMÁTICA (IP) ---
   private baseUrl = window.location.hostname;
   private apiUrl = `http://${this.baseUrl}:3000/contacts`;
   private apiCatUrl = `http://${this.baseUrl}:3000/categories`;
 
-  // --- SIGNALS (ESTADO) ---
+  // --- ESTRATEGIA DE REINTENTO (ANTIBLOQUEO) ---
+  // Si Windows bloquea el archivo, reintenta 3 veces esperando 1 segundo
+  private retryConfig = { count: 3, delay: 1000 };
+
+  // --- ESTADO (SIGNALS) ---
   contacts = signal<Contact[]>([]);
   categories = signal<string[]>([]);
   contactActuel = signal<Contact>(this.initContact());
   enEdition = signal<boolean>(false);
+  cargando = signal<boolean>(false);
 
   constructor() {
     this.cargarDatosIniciales();
@@ -30,75 +35,77 @@ export class ContactService {
     this.cargarCategorias();
   }
 
-  // --- CRUD CONTACTOS CON "FRENO" (setTimeout) ---
+  // --- CRUD CONTACTOS ---
 
   cargarContactos() {
-    this.http.get<Contact[]>(this.apiUrl).pipe(
-      catchError(error => {
-        console.error('Error cargando contactos:', error);
-        return of([]);
-      })
-    ).subscribe(data => this.contacts.set(data));
+    this.http.get<Contact[]>(this.apiUrl)
+      .pipe(
+        retry(this.retryConfig),
+        catchError(e => { console.error('Error red:', e); return of([]); })
+      )
+      .subscribe(data => this.contacts.set(data));
   }
 
   agregar(nuevoContacto: Contact) {
-    return this.http.post<Contact>(this.apiUrl, nuevoContacto).subscribe({
-      next: () => {
-        // ESPERAMOS 500ms para que Windows suelte el archivo db.json
-        setTimeout(() => {
+    this.cargando.set(true);
+    return this.http.post<Contact>(this.apiUrl, nuevoContacto)
+      .pipe(retry(this.retryConfig))
+      .subscribe({
+        next: () => {
           this.cargarContactos();
           this.resetFormulario();
-        }, 500);
-      },
-      error: (e) => console.error('Error al guardar:', e)
-    });
+          this.cargando.set(false);
+        },
+        error: (e) => {
+          console.error('Error fatal:', e);
+          this.cargando.set(false);
+        }
+      });
   }
 
   actualizar(contacto: Contact) {
-    const url = `${this.apiUrl}/${contacto.id}`;
+    this.cargando.set(true);
+    const url = `${this.apiUrl}/${String(contacto.id)}`;
 
-    // MIRA TU CONSOLA: Esto te confirmará que Angular sí está enviando el cambio
-    console.log('ENVIANDO ACTUALIZACIÓN:', contacto);
-
-    return this.http.put<Contact>(url, contacto).subscribe({
-      next: () => {
-        // Esperamos a que el servidor con delay termine de escribir
-        setTimeout(() => {
-          this.cargarContactos(); // Recarga la lista
-          this.resetFormulario(); // Cierra el formulario y limpia
-        }, 600); // Un poco más que el delay del servidor (500ms)
-      },
-      error: (e) => console.error('El servidor no responde:', e)
-    });
+    return this.http.put<Contact>(url, contacto)
+      .pipe(retry(this.retryConfig))
+      .subscribe({
+        next: () => {
+          this.cargarContactos();
+          this.resetFormulario();
+          this.cargando.set(false);
+        },
+        error: (e) => {
+          console.error('Error actualizando:', e);
+          this.cargando.set(false);
+        }
+      });
   }
 
   eliminar(id: number) {
-    if (confirm('¿Eliminar contacto?')) {
+    if (confirm('Confirmer la suppression ?')) {
       const url = `${this.apiUrl}/${String(id)}`;
-      this.http.delete(url).subscribe({
-        next: () => {
-          setTimeout(() => this.cargarContactos(), 500);
-        },
-        error: (e) => console.error('Error al eliminar:', e)
-      });
+      this.http.delete(url)
+        .pipe(retry(this.retryConfig))
+        .subscribe(() => this.cargarContactos());
     }
   }
 
-  // --- GESTIÓN DE CATEGORÍAS CON LIMPIEZA SEGURA ---
+  // --- CATEGORÍAS ---
 
   cargarCategorias() {
-    this.http.get<any[]>(this.apiCatUrl).pipe(
-      catchError(() => of([]))
-    ).subscribe(data => {
-      const nombres = data.map(c => c.nom || c);
-      this.categories.set(nombres);
-    });
+    this.http.get<any[]>(this.apiCatUrl)
+      .pipe(retry(this.retryConfig), catchError(() => of([])))
+      .subscribe(data => {
+        const nombres = data.map(c => c.nom || c);
+        this.categories.set(nombres);
+      });
   }
 
   agregarCategoria(nombre: string) {
-    this.http.post(this.apiCatUrl, { nom: nombre }).subscribe(() => {
-      setTimeout(() => this.cargarCategorias(), 500);
-    });
+    this.http.post(this.apiCatUrl, { nom: nombre })
+      .pipe(retry(this.retryConfig))
+      .subscribe(() => this.cargarCategorias());
   }
 
   eliminarCategoria(nombre: string) {
@@ -106,27 +113,20 @@ export class ContactService {
       const encontrada = todas.find(c => c.nom === nombre);
 
       if (encontrada && encontrada.id) {
-        // 1. Buscamos afectados
         const afectados = this.contacts().filter(c => c.categorie === nombre);
 
-        // 2. Preparamos peticiones
         const peticiones = afectados.map(c =>
-          this.http.put(`${this.apiUrl}/${c.id}`, { ...c, categorie: '' })
+          this.http.put(`${this.apiUrl}/${c.id}`, { ...c, categorie: '' }).pipe(retry(this.retryConfig))
         );
 
-        // 3. Ejecutamos limpieza
         const proceso = afectados.length > 0 ? forkJoin(peticiones) : of([]);
 
         proceso.subscribe({
           next: () => {
-            // 4. Borramos la categoría con un pequeño retraso
-            setTimeout(() => {
-              this.http.delete(`${this.apiCatUrl}/${encontrada.id}`).subscribe(() => {
-                setTimeout(() => this.cargarDatosIniciales(), 500);
-              });
-            }, 300);
-          },
-          error: (e) => console.error('Error en limpieza:', e)
+            this.http.delete(`${this.apiCatUrl}/${encontrada.id}`)
+              .pipe(retry(this.retryConfig))
+              .subscribe(() => this.cargarDatosIniciales());
+          }
         });
       }
     });
@@ -135,7 +135,6 @@ export class ContactService {
   // --- UTILIDADES ---
 
   prepararEdicion(contacto: Contact) {
-    // Clonamos el objeto para romper referencias viejas
     this.contactActuel.set({ ...contacto });
     this.enEdition.set(true);
   }

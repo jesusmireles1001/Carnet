@@ -38,18 +38,20 @@
       "numeroDeTelephone": "123456",
       "adresse": "rue123",
       "ville": "ville7",
+      "categorie": "IUT"
+    },
+    {
+      "id": 1771089144090,
+      "nom": "",
+      "prenom": "Prueba",
+      "adresseMail": "",
+      "numeroDeTelephone": "",
+      "adresse": "",
+      "ville": "",
       "categorie": "France"
     }
   ],
   "categories": [
-    {
-      "id": "2",
-      "nom": "Travail"
-    },
-    {
-      "id": "33ae",
-      "nom": "France"
-    },
     {
       "id": "a2b6",
       "nom": "Mexique"
@@ -57,6 +59,14 @@
     {
       "id": "9b08",
       "nom": "IUT"
+    },
+    {
+      "id": "6ed7",
+      "nom": "Travail"
+    },
+    {
+      "id": "0fb7",
+      "nom": "France"
     }
   ]
 }
