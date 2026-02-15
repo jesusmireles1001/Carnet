@@ -1,59 +1,24 @@
-# Untitled5
+carnet intelligent (projet Angular)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.0.
+Application de gestion des contacts développée avec Angular JSON-Server et webstorm.
 
-## Development server
+Guide de démarrage rapide
 
-To start a local development server, run:
+Ce projet nécessite deux terminaux simultanés pour fonctionner (frontend + backend simulé).
 
-```bash
-ng serve
-```
+Étape 1 : Démarrer la base de données (terminal 1)
+Exécutez cette commande pour démarrer le serveur de données :      
+npx json-server db.json --host 0.0.0.0
+Étape 2 : Démarrer l'application (terminal 2)
+Démarrez le serveur de développement Angular : ng serve --host 0.0.0.0
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-## Code scaffolding
+Note technique
+1. Portabilité automatique (IP dynamique) :
+   Le code détecte automatiquement l'adresse IP via window.location.hostname. L'application fonctionne donc aussi bien sur localhost que sur un réseau mobile pour les tests, sans qu'il soit nécessaire de modifier le code.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+2. Stabilité sous Windows (gestion des fichiers) :
+   Le système de fichiers Windows peut bloquer le fichier db.json lors d'écritures rapides (conditions de course).
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Solution mise en œuvre : une stratégie « Retry Pattern » (réessai automatique) a été intégrée via RxJS dans le service ContactService. Si un blocage est détecté, l'application attend et réessaie automatiquement l'opération (jusqu'à 3 fois), ce qui garantit la fluidité et la stabilité du système sans intervention de l'utilisateur.
+esta bien asi?
